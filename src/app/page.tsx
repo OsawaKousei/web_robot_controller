@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import VirtualJoystick from "@/components/VirtualJoystick";
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
@@ -11,41 +12,6 @@ export default function Home() {
     "SYSTEM: Initializing neural network interface...",
     "SYSTEM: Awaiting robot connection...",
   ]);
-  const joystickRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-
-  const handleJoystickMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDragging.current || !joystickRef.current) return;
-
-    const rect = joystickRef.current.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    let clientX, clientY;
-    if ("touches" in e) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-
-    const x = Math.max(
-      -centerX,
-      Math.min(centerX, clientX - rect.left - centerX)
-    );
-    const y = Math.max(
-      -centerY,
-      Math.min(centerY, clientY - rect.top - centerY)
-    );
-
-    setJoystickPosition({ x: x / centerX, y: -y / centerY });
-  };
-
-  const handleJoystickEnd = () => {
-    isDragging.current = false;
-    setJoystickPosition({ x: 0, y: 0 });
-  };
 
   const toggleConnection = () => {
     setIsConnected(!isConnected);
@@ -59,20 +25,12 @@ export default function Home() {
     setConsoleOutput((prev) => [...prev.slice(-20), `USER: ${message}`]);
   };
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => handleJoystickMove(e as any);
-    const handleMouseUp = handleJoystickEnd;
-
-    if (isDragging.current) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
+  const handleJoystickMove = (data: { x: number; y: number }) => {
+    setJoystickPosition(data);
+    if (isConnected) {
+      addConsoleMessage(`MOVE: X=${data.x.toFixed(2)}, Y=${data.y.toFixed(2)}`);
     }
-
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
+  };
 
   return (
     <div className="h-screen bg-background text-foreground p-2 grid grid-cols-12 grid-rows-8 gap-2 overflow-hidden">
@@ -180,40 +138,26 @@ export default function Home() {
             <span>SPEED:</span>
             <span className="text-cyber-pink">1.2 m/s</span>
           </div>
+          <div className="flex justify-between">
+            <span>JOY X:</span>
+            <span className="text-cyber-blue">
+              {joystickPosition.x.toFixed(2)}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>JOY Y:</span>
+            <span className="text-cyber-blue">
+              {joystickPosition.y.toFixed(2)}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Virtual Joystick */}
-      <div className="col-span-3 row-span-4 panel-gradient border border-panel-border rounded-lg p-3 cyber-glow">
-        <h2 className="text-sm font-semibold mb-2 text-cyber-blue neon-text">
-          MOVEMENT CONTROL
-        </h2>
-        <div className="flex flex-col items-center space-y-2">
-          <div
-            ref={joystickRef}
-            className="relative w-28 h-28 bg-black/50 rounded-full border-2 border-cyber-blue/50 cursor-pointer"
-            onMouseDown={() => {
-              isDragging.current = true;
-            }}
-            onTouchStart={() => {
-              isDragging.current = true;
-            }}
-          >
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyber-blue/20 to-transparent"></div>
-            <div
-              className="absolute w-6 h-6 bg-cyber-blue rounded-full cyber-glow transition-all duration-100"
-              style={{
-                left: `calc(50% + ${joystickPosition.x * 44}px - 12px)`,
-                top: `calc(50% + ${-joystickPosition.y * 44}px - 12px)`,
-              }}
-            ></div>
-          </div>
-          <div className="text-center text-xs space-y-1">
-            <div>X: {joystickPosition.x.toFixed(2)}</div>
-            <div>Y: {joystickPosition.y.toFixed(2)}</div>
-          </div>
-        </div>
-      </div>
+      <VirtualJoystick
+        onJoystickMove={handleJoystickMove}
+        isConnected={isConnected}
+      />
 
       {/* Console */}
       <div className="col-span-9 row-span-4 panel-gradient border border-panel-border rounded-lg p-3 cyber-glow">
@@ -250,3 +194,4 @@ export default function Home() {
     </div>
   );
 }
+      
