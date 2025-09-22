@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "target": "ES2021",
+        "module": "commonjs",
+        "jsx": "preserve",
+        "esModuleInterop": true,
+        // other options may exist
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "noEmit": true,
+        "incremental": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "plugins": [
+            {
+                "name": "next"
+            }
+        ],
+        "paths": {
+            "@/*": ["./src/app/*"]
+        }
+    },
+    "include": ["./", ".next/types/**/*.ts"],
+    "exclude": ["node_modules", "out", ".next", "**/*.test.ts", "**/*.test.tsx"]
+}
