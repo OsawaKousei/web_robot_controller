@@ -28,7 +28,7 @@ export default function Home() {
   const handleJoystickMove = (data: { x: number; y: number }) => {
     setJoystickPosition(data);
     if (isConnected) {
-      addConsoleMessage(`MOVE: X=${data.x.toFixed(2)}, Y=${data.y.toFixed(2)}`);
+      addConsoleMessage(`MOVE: X=${data.x.toFixed(4)}, Y=${data.y.toFixed(4)}`);
     }
   };
 
@@ -141,13 +141,13 @@ export default function Home() {
           <div className="flex justify-between">
             <span>JOY X:</span>
             <span className="text-cyber-blue">
-              {joystickPosition.x.toFixed(2)}
+              {joystickPosition.x.toFixed(4)}
             </span>
           </div>
           <div className="flex justify-between">
             <span>JOY Y:</span>
             <span className="text-cyber-blue">
-              {joystickPosition.y.toFixed(2)}
+              {joystickPosition.y.toFixed(4)}
             </span>
           </div>
         </div>
@@ -194,4 +194,3 @@ export default function Home() {
     </div>
   );
 }
-      

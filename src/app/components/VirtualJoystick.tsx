@@ -48,8 +48,8 @@ export default function VirtualJoystick({ onJoystickMove, isConnected }: Virtual
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyber-blue/20 to-transparent pointer-events-none"></div>
         </div>
         <div className="text-center text-xs space-y-1">
-          <div className="text-cyber-blue">X: {position.x.toFixed(2)}</div>
-          <div className="text-cyber-blue">Y: {position.y.toFixed(2)}</div>
+          <div className="text-cyber-blue">X: {position.x.toFixed(4)}</div>
+          <div className="text-cyber-blue">Y: {position.y.toFixed(4)}</div>
         </div>
         {!isConnected && (
           <div className="text-xs text-destructive text-center">
