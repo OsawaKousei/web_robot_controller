@@ -132,7 +132,7 @@ export default function Home() {
       </div>
 
       {/* Camera Monitor */}
-      <div className="col-span-6 row-span-4 panel-gradient border border-panel-border rounded-lg p-3 cyber-glow">
+      <div className="col-span-6 row-span-3 panel-gradient border border-panel-border rounded-lg p-3 cyber-glow">
         <h2 className="text-sm font-semibold mb-2 text-cyber-purple neon-text">
           CAMERA FEED
         </h2>
@@ -216,11 +216,11 @@ export default function Home() {
       </div>
 
       {/* Console */}
-      <div className="col-span-9 row-span-3 panel-gradient border border-panel-border rounded-lg p-3 cyber-glow">
+      <div className="col-span-9 row-span-4 panel-gradient border border-panel-border rounded-lg p-3 cyber-glow">
         <h2 className="text-sm font-semibold mb-2 text-cyber-green neon-text">
           SYSTEM CONSOLE
         </h2>
-        <div className="h-16 bg-black/70 border border-cyber-green/30 rounded p-2 overflow-y-auto font-mono text-xs">
+        <div className="h-20 bg-black/70 border border-cyber-green/30 rounded p-2 overflow-y-auto font-mono text-xs">
           {consoleOutput.map((line, index) => (
             <div key={index} className="text-cyber-green mb-0.5">
               <span className="text-muted-foreground text-xs">
