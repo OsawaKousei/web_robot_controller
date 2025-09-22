@@ -177,11 +177,11 @@ export default function Home() {
       />
 
       {/* Console */}
-      <div className="col-span-9 row-span-4 panel-gradient border border-panel-border rounded-lg p-3 cyber-glow">
+      <div className="col-span-9 row-span-4 panel-gradient border border-panel-border rounded-lg p-3 cyber-glow flex flex-col">
         <h2 className="text-sm font-semibold mb-2 text-cyber-green neon-text">
           SYSTEM CONSOLE
         </h2>
-        <div className="h-20 bg-black/70 border border-cyber-green/30 rounded p-2 overflow-y-auto font-mono text-xs">
+        <div className="flex-1 bg-black/70 border border-cyber-green/30 rounded p-2 overflow-y-auto font-mono text-xs">
           {consoleOutput.map((line, index) => (
             <div key={index} className="text-cyber-green mb-0.5">
               <span className="text-muted-foreground text-xs">
