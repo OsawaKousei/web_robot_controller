@@ -14,6 +14,10 @@ export default function Home() {
   ]);
   const rosConnectionRef = useRef<ROSConnection | null>(null);
 
+  const addConsoleMessage = (message: string) => {
+    setConsoleOutput((prev) => [...prev.slice(-20), message]);
+  };
+
   const toggleConnection = async () => {
     if (isConnected) {
       // 切断処理
@@ -26,20 +30,15 @@ export default function Home() {
     } else {
       // 接続処理
       try {
-        rosConnectionRef.current = new ROSConnection();
+        rosConnectionRef.current = new ROSConnection(addConsoleMessage);
         await rosConnectionRef.current.connect('ws://localhost:9090');
         setIsConnected(true);
         addConsoleMessage("CONNECTION: Robot connected successfully");
-        addConsoleMessage("ROS: Connected to ros2-web-bridge at localhost:9090");
       } catch (error) {
         addConsoleMessage(`CONNECTION: Failed to connect - ${error}`);
         rosConnectionRef.current = null;
       }
     }
-  };
-
-  const addConsoleMessage = (message: string) => {
-    setConsoleOutput((prev) => [...prev.slice(-20), `USER: ${message}`]);
   };
 
   const handleJoystickMove = (data: { x: number; y: number }) => {
@@ -199,7 +198,7 @@ export default function Home() {
             className="flex-1 bg-black/50 border border-cyber-green/30 rounded-l px-2 py-1 text-xs focus:outline-none focus:border-cyber-green"
             onKeyPress={(e) => {
               if (e.key === "Enter" && e.currentTarget.value) {
-                addConsoleMessage(e.currentTarget.value);
+                addConsoleMessage(`USER: ${e.currentTarget.value}`);
                 e.currentTarget.value = "";
               }
             }}
