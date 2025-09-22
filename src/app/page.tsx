@@ -1,103 +1,252 @@
+"use client";
+
 import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isConnected, setIsConnected] = useState(false);
+  const [joystickPosition, setJoystickPosition] = useState({ x: 0, y: 0 });
+  const [consoleOutput, setConsoleOutput] = useState([
+    "SYSTEM: RoboCyber Control Station v2.1.0",
+    "SYSTEM: Initializing neural network interface...",
+    "SYSTEM: Awaiting robot connection...",
+  ]);
+  const joystickRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleJoystickMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging.current || !joystickRef.current) return;
+
+    const rect = joystickRef.current.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    let clientX, clientY;
+    if ("touches" in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    const x = Math.max(
+      -centerX,
+      Math.min(centerX, clientX - rect.left - centerX)
+    );
+    const y = Math.max(
+      -centerY,
+      Math.min(centerY, clientY - rect.top - centerY)
+    );
+
+    setJoystickPosition({ x: x / centerX, y: -y / centerY });
+  };
+
+  const handleJoystickEnd = () => {
+    isDragging.current = false;
+    setJoystickPosition({ x: 0, y: 0 });
+  };
+
+  const toggleConnection = () => {
+    setIsConnected(!isConnected);
+    const newMessage = isConnected
+      ? "CONNECTION: Robot disconnected"
+      : "CONNECTION: Robot connected successfully";
+    setConsoleOutput((prev) => [...prev, newMessage]);
+  };
+
+  const addConsoleMessage = (message: string) => {
+    setConsoleOutput((prev) => [...prev.slice(-20), `USER: ${message}`]);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => handleJoystickMove(e as any);
+    const handleMouseUp = handleJoystickEnd;
+
+    if (isDragging.current) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground p-4 grid grid-cols-12 grid-rows-12 gap-4">
+      {/* Header */}
+      <header className="col-span-12 row-span-1 panel-gradient border border-panel-border rounded-lg p-4 cyber-glow">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-8 h-8 bg-cyber-blue rounded-full neon-text flex items-center justify-center">
+              <span className="text-lg font-bold">R</span>
+            </div>
+            <h1 className="text-xl font-bold neon-text text-cyber-blue">
+              RoboCyber Control Station
+            </h1>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            SYSTEM TIME: {new Date().toLocaleTimeString()}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      </header>
+
+      {/* Connection Panel */}
+      <div className="col-span-3 row-span-3 panel-gradient border border-panel-border rounded-lg p-4 cyber-glow">
+        <h2 className="text-lg font-semibold mb-4 text-cyber-green neon-text">
+          CONNECTION STATUS
+        </h2>
+        <div className="space-y-4">
+          <div className="flex items-center space-x-3">
+            <div
+              className={`w-4 h-4 rounded-full ${
+                isConnected ? "status-online" : "status-offline"
+              }`}
+            ></div>
+            <span
+              className={`font-medium ${
+                isConnected ? "text-cyber-green" : "text-destructive"
+              }`}
+            >
+              {isConnected ? "ONLINE" : "OFFLINE"}
+            </span>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div>IP: 192.168.1.100</div>
+            <div>PORT: 8080</div>
+            <div>LATENCY: {isConnected ? "12ms" : "N/A"}</div>
+          </div>
+          <button
+            onClick={toggleConnection}
+            className={`w-full py-2 px-4 rounded border transition-all duration-300 ${
+              isConnected
+                ? "bg-destructive/20 border-destructive text-destructive hover:bg-destructive/30"
+                : "bg-cyber-blue/20 border-cyber-blue text-cyber-blue hover:bg-cyber-blue/30 cyber-glow"
+            }`}
+          >
+            {isConnected ? "DISCONNECT" : "CONNECT"}
+          </button>
+        </div>
+      </div>
+
+      {/* Camera Monitor */}
+      <div className="col-span-6 row-span-6 panel-gradient border border-panel-border rounded-lg p-4 cyber-glow">
+        <h2 className="text-lg font-semibold mb-4 text-cyber-purple neon-text">
+          CAMERA FEED
+        </h2>
+        <div className="w-full h-full bg-black/50 border border-cyber-purple/50 rounded relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-cyber-purple/10 to-transparent"></div>
+          <div className="absolute top-4 left-4 text-cyber-purple text-sm">
+            CAM_01 | RES: 1920x1080 | FPS: 30
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-6xl text-cyber-purple/30">📹</div>
+          </div>
+          {isConnected && (
+            <div className="absolute bottom-4 right-4">
+              <div className="w-3 h-3 bg-cyber-green rounded-full animate-pulse"></div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Robot Stats */}
+      <div className="col-span-3 row-span-3 panel-gradient border border-panel-border rounded-lg p-4 cyber-glow">
+        <h2 className="text-lg font-semibold mb-4 text-cyber-pink neon-text">
+          ROBOT TELEMETRY
+        </h2>
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between">
+            <span>BATTERY:</span>
+            <span className="text-cyber-green">87%</span>
+          </div>
+          <div className="w-full bg-black/50 rounded-full h-2">
+            <div
+              className="bg-cyber-green h-2 rounded-full"
+              style={{ width: "87%" }}
+            ></div>
+          </div>
+          <div className="flex justify-between">
+            <span>CPU TEMP:</span>
+            <span className="text-cyber-blue">42°C</span>
+          </div>
+          <div className="flex justify-between">
+            <span>MEMORY:</span>
+            <span className="text-cyber-purple">2.1/4.0GB</span>
+          </div>
+          <div className="flex justify-between">
+            <span>SPEED:</span>
+            <span className="text-cyber-pink">1.2 m/s</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Virtual Joystick */}
+      <div className="col-span-3 row-span-5 panel-gradient border border-panel-border rounded-lg p-4 cyber-glow">
+        <h2 className="text-lg font-semibold mb-4 text-cyber-blue neon-text">
+          MOVEMENT CONTROL
+        </h2>
+        <div className="flex flex-col items-center space-y-4">
+          <div
+            ref={joystickRef}
+            className="relative w-40 h-40 bg-black/50 rounded-full border-2 border-cyber-blue/50 cursor-pointer"
+            onMouseDown={() => {
+              isDragging.current = true;
+            }}
+            onTouchStart={() => {
+              isDragging.current = true;
+            }}
+          >
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyber-blue/20 to-transparent"></div>
+            <div
+              className="absolute w-8 h-8 bg-cyber-blue rounded-full cyber-glow transition-all duration-100"
+              style={{
+                left: `calc(50% + ${joystickPosition.x * 60}px - 16px)`,
+                top: `calc(50% + ${-joystickPosition.y * 60}px - 16px)`,
+              }}
+            ></div>
+          </div>
+          <div className="text-center text-sm space-y-1">
+            <div>X: {joystickPosition.x.toFixed(2)}</div>
+            <div>Y: {joystickPosition.y.toFixed(2)}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Console */}
+      <div className="col-span-9 row-span-5 panel-gradient border border-panel-border rounded-lg p-4 cyber-glow">
+        <h2 className="text-lg font-semibold mb-4 text-cyber-green neon-text">
+          SYSTEM CONSOLE
+        </h2>
+        <div className="h-32 bg-black/70 border border-cyber-green/30 rounded p-3 overflow-y-auto font-mono text-sm">
+          {consoleOutput.map((line, index) => (
+            <div key={index} className="text-cyber-green mb-1">
+              <span className="text-muted-foreground">
+                [{new Date().toLocaleTimeString()}]
+              </span>{" "}
+              {line}
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 flex">
+          <input
+            type="text"
+            placeholder="Enter command..."
+            className="flex-1 bg-black/50 border border-cyber-green/30 rounded-l px-3 py-2 text-sm focus:outline-none focus:border-cyber-green"
+            onKeyPress={(e) => {
+              if (e.key === "Enter" && e.currentTarget.value) {
+                addConsoleMessage(e.currentTarget.value);
+                e.currentTarget.value = "";
+              }
+            }}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <button className="px-4 py-2 bg-cyber-green/20 border border-cyber-green text-cyber-green rounded-r hover:bg-cyber-green/30 transition-colors">
+            SEND
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
