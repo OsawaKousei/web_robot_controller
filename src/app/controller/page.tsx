@@ -30,8 +30,9 @@ export default function Home() {
     } else {
       // 接続処理
       try {
+        const rosUrl = process.env.NEXT_PUBLIC_ROS_WEBSOCKET_URL || 'ws://localhost:9090';
         rosConnectionRef.current = new ROSConnection(addConsoleMessage);
-        await rosConnectionRef.current.connect('ws://localhost:9090');
+        await rosConnectionRef.current.connect(rosUrl);
         setIsConnected(true);
         addConsoleMessage("CONNECTION: Robot connected successfully");
       } catch (error) {
