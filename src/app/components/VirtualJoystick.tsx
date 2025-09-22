@@ -13,7 +13,8 @@ export default function VirtualJoystick({ onJoystickMove, isConnected }: Virtual
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const handleMove = (event: IJoystickUpdateEvent) => {
-    if (event.x !== undefined && event.y !== undefined) {
+    if (event.x !== undefined && event.y !== undefined && event.x !== null && event.y !== null) {
+
       const normalizedX = event.x / 50; // react-joystick-componentは-50から50の値を返す
       const normalizedY = event.y / 50;
       
