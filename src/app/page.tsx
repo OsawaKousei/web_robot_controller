@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import VirtualJoystick from "@/components/VirtualJoystick";
+import { ROSConnection } from "@/lib/ROSConnection";
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
@@ -11,13 +12,30 @@ export default function Home() {
     "SYSTEM: Initializing neural network interface...",
     "SYSTEM: Awaiting robot connection...",
   ]);
+  const rosConnectionRef = useRef<ROSConnection | null>(null);
 
-  const toggleConnection = () => {
-    setIsConnected(!isConnected);
-    const newMessage = isConnected
-      ? "CONNECTION: Robot disconnected"
-      : "CONNECTION: Robot connected successfully";
-    setConsoleOutput((prev) => [...prev, newMessage]);
+  const toggleConnection = async () => {
+    if (isConnected) {
+      // 切断処理
+      if (rosConnectionRef.current) {
+        rosConnectionRef.current.disconnect();
+        rosConnectionRef.current = null;
+      }
+      setIsConnected(false);
+      addConsoleMessage("CONNECTION: Robot disconnected");
+    } else {
+      // 接続処理
+      try {
+        rosConnectionRef.current = new ROSConnection();
+        await rosConnectionRef.current.connect('ws://localhost:9090');
+        setIsConnected(true);
+        addConsoleMessage("CONNECTION: Robot connected successfully");
+        addConsoleMessage("ROS: Connected to ros2-web-bridge at localhost:9090");
+      } catch (error) {
+        addConsoleMessage(`CONNECTION: Failed to connect - ${error}`);
+        rosConnectionRef.current = null;
+      }
+    }
   };
 
   const addConsoleMessage = (message: string) => {
@@ -156,6 +174,7 @@ export default function Home() {
       <VirtualJoystick
         onJoystickMove={handleJoystickMove}
         isConnected={isConnected}
+        rosConnection={rosConnectionRef.current}
       />
 
       {/* Console */}

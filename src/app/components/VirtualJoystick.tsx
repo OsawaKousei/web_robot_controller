@@ -3,13 +3,15 @@
 import { useState, useEffect } from "react";
 import { Joystick } from "react-joystick-component";
 import { IJoystickUpdateEvent } from "react-joystick-component/build/lib/Joystick";
+import { ROSConnection } from "@/lib/ROSConnection";
 
 interface VirtualJoystickProps {
   onJoystickMove: (data: { x: number; y: number }) => void;
   isConnected: boolean;
+  rosConnection: ROSConnection | null;
 }
 
-export default function VirtualJoystick({ onJoystickMove, isConnected }: VirtualJoystickProps) {
+export default function VirtualJoystick({ onJoystickMove, isConnected, rosConnection }: VirtualJoystickProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const handleMove = (event: IJoystickUpdateEvent) => {
@@ -20,12 +22,22 @@ export default function VirtualJoystick({ onJoystickMove, isConnected }: Virtual
       
       setPosition({ x: normalizedX, y: normalizedY });
       onJoystickMove({ x: normalizedX, y: normalizedY });
+
+      // ROSにcmd_velメッセージを配信
+      if (isConnected && rosConnection) {
+        rosConnection.publishJoystickMovement(normalizedX, normalizedY);
+      }
     }
   };
 
   const handleStop = () => {
     setPosition({ x: 0, y: 0 });
     onJoystickMove({ x: 0, y: 0 });
+
+    // ロボットを停止
+    if (isConnected && rosConnection) {
+      rosConnection.publishJoystickMovement(0, 0);
+    }
   };
 
   return (
